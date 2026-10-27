@@ -1,7 +1,7 @@
 id = "kimi"
-version = "2026.06.10.1"
+version = "2026.10.27.1"
 min_engine_version = 1
-updated_at = "2026-06-10T00:00:00Z"
+updated_at = "2026-10-27T00:00:00Z"
 aliases = ["kimi-code", "kimi code"]
 
 [[rules]]
@@ -25,17 +25,41 @@ all = [
 ]
 
 [[rules]]
+id = "approval_panel_options"
+state = "blocked"
+priority = 395
+region = "whole_recent"
+visible_blocker = true
+# Narrow panes truncate the footer controls ("↵ c..."), but the numbered
+# option rows keep their leading words. Match the option block so pane width
+# does not decide between blocked and idle.
+line_regex = [
+  '(?i)^\s*▶?\s*\d+\.\s*approve\b',
+  '(?i)^\s*▶?\s*\d+\.\s*reject\b',
+]
+
+[[rules]]
 id = "question_panel"
 state = "blocked"
 priority = 390
 region = "whole_recent"
 visible_blocker = true
-contains = ["↑↓ select", "esc cancel"]
-line_regex = ['^\s*question\s*$', '^\s*\? ']
+contains = ["↑↓ select"]
+all = [
+  { any = [{ line_regex = ['^\s*question\s*$'] }, { line_regex = ['^\s*\? '] }] },
+  { line_regex = ['^\s*(?:→\s*)?\[1\]'] },
+]
+
+[[rules]]
+id = "trust_folder"
+state = "blocked"
+priority = 350
+region = "whole_recent"
+visible_blocker = true
+contains = ["trust this"]
 any = [
-  { contains = ["↵ choose"] },
-  { contains = ["↵ toggle"] },
-  { contains = ["↵ save"] },
+  { contains = ["trust and continue"] },
+  { line_regex = ['^\s*❯\s*trust\b'] },
 ]
 
 [[rules]]
@@ -56,22 +80,25 @@ all = [
 id = "background_agent_status_working"
 state = "working"
 priority = 120
-region = "bottom_non_empty_lines(3)"
+region = "bottom_non_empty_lines(6)"
 visible_working = true
-line_regex = ['(?i)\bkimi[-\w.]*\s+thinking\b.*\[[1-9][0-9]*\s+agents?\s+running\]']
+line_regex = ['(?i)\bthinking(?::\s*\w+)?\b.*\[[1-9][0-9]*\s+(?:agents?|tasks?)\s+running\]']
 
 [[rules]]
 id = "moon_spinner_working"
 state = "working"
 priority = 100
-region = "whole_recent"
+region = "bottom_non_empty_lines(20)"
 visible_working = true
-line_regex = ['^\s*(🌕|🌖|🌗|🌘|🌑|🌒|🌓|🌔)\s*$']
+line_regex = ['^\s*(🌕|🌖|🌗|🌘|🌑|🌒|🌓|🌔)(?:\s*·\s*Tip:.*)?\s*$']
 
 [[rules]]
 id = "braille_spinner_working"
 state = "working"
 priority = 90
-region = "whole_recent"
+region = "bottom_non_empty_lines(20)"
 visible_working = true
-line_regex = ['(?i)^\s*[\u2800-\u28FF]+\s*(thinking\.\.\.|working\.\.\.|using )']
+any = [
+  { line_regex = ['(?i)^\s*[\x{2800}-\x{28FF}]+\s+(?:thinking|working)(?:\.\.\.|…)(?:\s*·\s*Tip:.*)?\s*$'] },
+  { line_regex = ['(?i)^\s*[\x{2800}-\x{28FF}]+\s+using\s'] },
+]
